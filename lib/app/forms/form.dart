@@ -139,10 +139,14 @@ class _MyCustomFormState extends State<MyCustomForm> {
             showLoader(false);
             return;
           }
-          var data = json.decode(contents);
+          var data = json.decode(contents) as Map<String,dynamic>;
           widget.buttonText=data["name"];
           print("actions for ${widget.httpMethod.toText()}");
-          print(data["actions"][widget.httpMethod.toText()]);
+          if(!data.containsKey("actions")){
+            print("No actions found..");
+            showLoader(false);
+            return ;
+          }
           var fields = data["actions"][widget.httpMethod.toText()]
               as Map<String, dynamic>;
           fields.forEach((key, value) {
