@@ -13,43 +13,46 @@ class DashboardScreen extends StatelessWidget {
         title: Text("Dashboard"),
       ),
       body: Center(
-        child: MyCustomForm(
-          httpMethod: HttpMethod.POST,
-          formKey: _form,
-          successHttpStatusCode: 201,
-          buttonText: "Sign Up",
-          fields: [
-            MyInput(
-              fieldName: "first_name",
-              label: "First Name",
-            ),
-            MyInput(
-                fieldName: "email",
-                label: "Email",
-                keyboardType: TextInputType.emailAddress),
-            MyInput(
-              fieldName: "password",
-              label: "Password",
-              obscureText: true,
-            ),
-            MyInput(
-                fieldName: "e_date",
-                label: "Enrollment Date",
-                keyboardType: TextInputType.datetime),
-          ],
-          url: "https://api.safarinjema.wavvy.dev/api/v1/users/",
-          onLoading: (value) {
-            print("On loading $value");
-          },
-          onError: (res) {
-            print("daam Error occured");
-            print(res.statusCode);
-            print(res.body);
-          },
-          onSuccess: (res) {
-            print("Success");
-            print(res.body);
-          },
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: MyCustomForm(
+            httpMethod: HttpMethod.POST,
+            formKey: _form,
+            successHttpStatusCode: 201,
+            buttonText: "Sign Up",
+            fields: [
+              MyInput(
+                fieldName: "first_name",
+                label: "First Name",
+              ),
+              MyInput(
+                  fieldName: "email",
+                  label: "Email",
+                  keyboardType: TextInputType.emailAddress),
+              MyInput(
+                fieldName: "password",
+                label: "Password",
+                obscureText: true,
+              ),
+              MyInput(
+                  fieldName: "e_date",
+                  label: "Enrollment Date",
+                  keyboardType: TextInputType.datetime),
+            ],
+            url: "https://api.safarinjema.wavvy.dev/api/v1/users/",
+            onLoading: (value) {
+              print("On loading $value");
+            },
+            onError: (res) {
+              print("daam Error occured");
+              print(res.statusCode);
+              print(res.body);
+            },
+            onSuccess: (res) {
+              print("Success");
+              print(res.body);
+            },
+          ),
         ),
       ),
     );

@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+// import 'package:dio/dio.dart';
 
 import '../models/http_exception.dart';
 
@@ -44,7 +47,7 @@ class MyCustomForm extends StatefulWidget {
     this.onSuccess,
     this.onError,
     this.fields,
-    this.buttonText=null,
+    this.buttonText = null,
     @required this.formKey,
   }) : super(key: key);
 
@@ -55,7 +58,8 @@ class MyCustomForm extends StatefulWidget {
 class _MyCustomFormState extends State<MyCustomForm> {
   Map<String, dynamic> form_data = {};
   Map<String, dynamic> form_errors = {};
-  bool _isLoading=false;
+  bool _isLoading = false;
+  final List<MyInput> dynamicFields = [];
 
   get headers {
     print("getting headers");
@@ -67,10 +71,17 @@ class _MyCustomFormState extends State<MyCustomForm> {
     form_data = {};
   }
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    createForm();
+  }
+
   void showLoader(status) {
     widget.onLoading(status);
     setState(() {
-      _isLoading=status;
+      _isLoading = status;
     });
   }
 
@@ -78,10 +89,45 @@ class _MyCustomFormState extends State<MyCustomForm> {
     widget.formKey.currentState.validate();
   }
 
-  void createForm(){
-
+  void createForm() async {
+    try {
+      // var response = await http.;
+      // Response response = await Dio().request(widget.url);
+      showLoader(true);
+      HttpClient client = new HttpClient();
+      client
+          .openUrl("OPTIONS", Uri.parse(widget.url))
+          .then((HttpClientRequest request) => request.close())
+          .then((HttpClientResponse response) {
+        response.transform(utf8.decoder).listen((contents) {
+          if (response.statusCode != 200) return;
+          var data = json.decode(contents);
+          print("actions for ${widget.httpMethod.toText()}");
+          print(data["actions"][widget.httpMethod.toText()]);
+          var fields = data["actions"][widget.httpMethod.toText()]
+              as Map<String, dynamic>;
+          fields.forEach((key, value) {
+            print(value);
+            var readOnly = value["read_only"];
+            if (!readOnly) {
+              var required = value["required"];
+              dynamicFields.add(MyInput(
+                label: "${value["label"]}${required ? '*' : ''}",
+                fieldName: key,
+                required: value["required"],
+              ));
+            }
+          });
+          setState(() {});
+          showLoader(false);
+        });
+      });
+    } catch (error) {
+      showLoader(false);
+      print("Error loading options...");
+      print(error);
+    }
   }
-
 
   void makeHttpCall() async {
     resetFormState();
@@ -139,32 +185,39 @@ class _MyCustomFormState extends State<MyCustomForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-        key: widget.formKey,
-        child: Column(
-          children: [
-            ...widget.fields.map((e) => makeInput(
-                label: e.label,
-                fieldName: e.fieldName,
-                required: e.required,
-                obscureText: e.obscureText,
-                keyboardType: e.keyboardType)),
-            _isLoading?Center(child: CircularProgressIndicator(),): MaterialButton(
-              minWidth: double.infinity,
-              onPressed: makeHttpCall,
-              height: 40,
-              color: Colors.blue,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              child: Text(widget.buttonText??widget.httpMethod.toText(),
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'Gotham',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400)),
-            )
-          ],
-        ));
+    return SingleChildScrollView(
+      child: Form(
+          key: widget.formKey,
+          child: Column(
+            children: [
+              ...dynamicFields.map((e) => makeInput(
+                  label: e.label,
+                  fieldName: e.fieldName,
+                  required: e.required,
+                  obscureText: e.obscureText,
+                  keyboardType: e.keyboardType)),
+              _isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : MaterialButton(
+                      minWidth: double.infinity,
+                      onPressed: makeHttpCall,
+                      height: 40,
+                      color: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      child: Text(
+                          widget.buttonText ?? widget.httpMethod.toText(),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Gotham',
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400)),
+                    )
+            ],
+          )),
+    );
   }
 
   Widget makeInput(

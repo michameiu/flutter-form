@@ -5,7 +5,6 @@ import '../theme/constants.dart';
 import 'dashboard.dart';
 import 'sign_up.dart';
 import 'forgot_password.dart';
-
 import 'model.dart';
 
 class LoginScreen extends StatefulWidget {
