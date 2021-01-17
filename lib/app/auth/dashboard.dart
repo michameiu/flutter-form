@@ -1,15 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_concepts/app/forms/form.dart';
 import 'package:flutter_concepts/app/models/http_exception.dart';
-class DashboardScreen extends StatelessWidget {
-  static const routeName="/dashboard";
-  GlobalKey<FormState> _form = GlobalKey<FormState>();
 
+class DashboardScreen extends StatelessWidget {
+  static const routeName = "/dashboard";
+  GlobalKey<FormState> _form = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Dashboard"),
@@ -19,32 +17,36 @@ class DashboardScreen extends StatelessWidget {
           httpMethod: HttpMethod.POST,
           formKey: _form,
           successHttpStatusCode: 201,
+          buttonText: "Sign Up",
           fields: [
             MyInput(
               fieldName: "first_name",
               label: "First Name",
             ),
             MyInput(
-              fieldName: "email",
-              label: "Email",
-              keyboardType: TextInputType.emailAddress
+                fieldName: "email",
+                label: "Email",
+                keyboardType: TextInputType.emailAddress),
+            MyInput(
+              fieldName: "password",
+              label: "Password",
+              obscureText: true,
             ),
             MyInput(
-                fieldName: "password",
-                label: "Password",
-              obscureText: true
-            ),
+                fieldName: "e_date",
+                label: "Enrollment Date",
+                keyboardType: TextInputType.datetime),
           ],
           url: "https://api.safarinjema.wavvy.dev/api/v1/users/",
-          onLoading: (value){
+          onLoading: (value) {
             print("On loading $value");
           },
-          onError: (res){
+          onError: (res) {
             print("daam Error occured");
             print(res.statusCode);
             print(res.body);
           },
-          onSuccess: (res){
+          onSuccess: (res) {
             print("Success");
             print(res.body);
           },

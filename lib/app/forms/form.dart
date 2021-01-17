@@ -30,6 +30,7 @@ class MyCustomForm extends StatefulWidget {
   final Function onError;
   final GlobalKey<FormState> formKey;
   final List<MyInput> fields;
+  final String buttonText;
   Map<String, dynamic> form_data;
 
   Map<String, dynamic> form_errors;
@@ -43,6 +44,7 @@ class MyCustomForm extends StatefulWidget {
     this.onSuccess,
     this.onError,
     this.fields,
+    this.buttonText=null,
     @required this.formKey,
   }) : super(key: key);
 
@@ -53,6 +55,7 @@ class MyCustomForm extends StatefulWidget {
 class _MyCustomFormState extends State<MyCustomForm> {
   Map<String, dynamic> form_data = {};
   Map<String, dynamic> form_errors = {};
+  bool _isLoading=false;
 
   get headers {
     print("getting headers");
@@ -66,6 +69,9 @@ class _MyCustomFormState extends State<MyCustomForm> {
 
   void showLoader(status) {
     widget.onLoading(status);
+    setState(() {
+      _isLoading=status;
+    });
   }
 
   void showErrors() {
@@ -143,14 +149,14 @@ class _MyCustomFormState extends State<MyCustomForm> {
                 required: e.required,
                 obscureText: e.obscureText,
                 keyboardType: e.keyboardType)),
-            MaterialButton(
+            _isLoading?Center(child: CircularProgressIndicator(),): MaterialButton(
               minWidth: double.infinity,
               onPressed: makeHttpCall,
               height: 40,
               color: Colors.blue,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
-              child: Text(widget.httpMethod.toText(),
+              child: Text(widget.buttonText??widget.httpMethod.toText(),
                   style: TextStyle(
                       color: Colors.white,
                       fontFamily: 'Gotham',
