@@ -14,10 +14,12 @@ class MyInput {
   final bool required;
   final TextInputType keyboardType;
   final bool obscureText;
+  final GlobalKey<FormFieldState> fieldStateKey;
 
   const MyInput({
     this.fieldName,
     this.label,
+    this.fieldStateKey,
     this.required = false,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
@@ -84,6 +86,8 @@ class _MyCustomFormState extends State<MyCustomForm> {
   Map<String, dynamic> form_errors = {};
   bool _isLoading = false;
   final List<MyInput> dynamicFields = [];
+  final _formFieldKey = GlobalKey<FormFieldState>();
+  List<Map<String, GlobalKey<FormFieldState>>> fieldStateKeys = [];
 
   get headers {
     print("getting headers");
@@ -130,7 +134,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
       client
           .openUrl("OPTIONS", Uri.parse(widget.url))
           .then((HttpClientRequest request) {
-            request.headers.add("Authorization", "Bearer micha");
+        request.headers.add("Authorization", "Bearer micha");
         return request.close();
       }).then((HttpClientResponse response) {
         showLoader(false);
@@ -142,17 +146,17 @@ class _MyCustomFormState extends State<MyCustomForm> {
             showLoader(false);
             return;
           }
-          var data = json.decode(contents) as Map<String,dynamic>;
-          widget.buttonText=data["name"];
+          var data = json.decode(contents) as Map<String, dynamic>;
+          widget.buttonText = data["name"];
           print("actions for ${widget.httpMethod.toText()}");
-          if(!data.containsKey("actions")){
+          if (!data.containsKey("actions")) {
             print("No actions found..");
             showLoader(false);
-            return ;
+            return;
           }
           var fields = data["actions"][widget.httpMethod.toText()]
               as Map<String, dynamic>;
-          if(fields==null){
+          if (fields == null) {
             return;
           }
           fields.forEach((key, value) {
@@ -160,9 +164,13 @@ class _MyCustomFormState extends State<MyCustomForm> {
             var readOnly = value["read_only"];
             if (!readOnly) {
               var required = value["required"];
+              final _formFieldKey = GlobalKey<FormFieldState>();
+              // _formFieldKey.currentState.validate();
+              fieldStateKeys.add({key: _formFieldKey});
               dynamicFields.add(MyInput(
                 label: "${value["label"]}${required ? '*' : ''}",
                 fieldName: key,
+                fieldStateKey: _formFieldKey,
                 required: value["required"],
               ));
             }
@@ -244,6 +252,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
                   fieldName: e.fieldName,
                   required: e.required,
                   obscureText: e.obscureText,
+                  fieldStateKey: e.fieldStateKey,
                   keyboardType: e.keyboardType)),
               _isLoading
                   ? Center(
@@ -275,7 +284,8 @@ class _MyCustomFormState extends State<MyCustomForm> {
       required: false,
       fieldName = null,
       keyboardType = null,
-      validator: null}) {
+      validator: null,
+      fieldStateKey = null}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -291,6 +301,12 @@ class _MyCustomFormState extends State<MyCustomForm> {
           height: 5,
         ),
         TextFormField(
+            key: fieldStateKey,
+            onChanged: (value) {
+              setState(() {
+                fieldStateKey.currentState.validate();
+              });
+            },
             onSaved: (value) {
               if (fieldName != null) {
                 form_data[fieldName] = value;

@@ -39,7 +39,7 @@ class DashboardScreen extends StatelessWidget {
                   label: "Enrollment Date",
                   keyboardType: TextInputType.datetime),
             ],
-            url: "https://bwsapi.sisitech.dev/api/v1/timps/",
+            url: "https://api.safarinjema.wavvy.dev/api/v1/car-types/",
             onLoading: (value) {
               print("On loading $value");
             },
