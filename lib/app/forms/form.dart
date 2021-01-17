@@ -33,7 +33,7 @@ class MyCustomForm extends StatefulWidget {
   final Function onError;
   final GlobalKey<FormState> formKey;
   final List<MyInput> fields;
-  final String buttonText;
+  String buttonText;
   Map<String, dynamic> form_data;
 
   Map<String, dynamic> form_errors;
@@ -53,6 +53,30 @@ class MyCustomForm extends StatefulWidget {
 
   @override
   _MyCustomFormState createState() => _MyCustomFormState();
+}
+
+extension HttNoNullBody on Map<String, dynamic> {
+  String toHttpNullBody() {
+    var params = {};
+    this.forEach((key, value) {
+      if (value != null && value != "") {
+        params[key] = value;
+      }
+    });
+    return json.encode(params);
+  }
+
+  MyInput parseMyInput() {
+    return MyInput(
+      label: "${this["label"]}${this["required"] ? '*' : ''}",
+      fieldName: this["key"],
+      required: this["required"],
+    );
+  }
+
+// List<MyInput> parseToMyInputs(){
+//   this.map((key, value) => this);
+// }
 }
 
 class _MyCustomFormState extends State<MyCustomForm> {
@@ -75,6 +99,12 @@ class _MyCustomFormState extends State<MyCustomForm> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    if (widget.fields == null) {
+      print("no fields found, getting dynamic fields..");
+    } else {
+      print("no need to get dynamic forms..");
+    }
     createForm();
   }
 
@@ -95,13 +125,22 @@ class _MyCustomFormState extends State<MyCustomForm> {
       // Response response = await Dio().request(widget.url);
       showLoader(true);
       HttpClient client = new HttpClient();
+      print("getting fields");
       client
           .openUrl("OPTIONS", Uri.parse(widget.url))
-          .then((HttpClientRequest request) => request.close())
-          .then((HttpClientResponse response) {
+          .then((HttpClientRequest request) {
+            request.headers.add("Authorization", "Bearer micha");
+        return request.close();
+      }).then((HttpClientResponse response) {
         response.transform(utf8.decoder).listen((contents) {
-          if (response.statusCode != 200) return;
+          if (response.statusCode != 200) {
+            print("GOt ${response.statusCode}");
+            print(contents);
+            showLoader(false);
+            return;
+          }
           var data = json.decode(contents);
+          widget.buttonText=data["name"];
           print("actions for ${widget.httpMethod.toText()}");
           print(data["actions"][widget.httpMethod.toText()]);
           var fields = data["actions"][widget.httpMethod.toText()]
@@ -140,7 +179,8 @@ class _MyCustomFormState extends State<MyCustomForm> {
 
     showLoader(true);
     http.Response response;
-    var body = json.encode(form_data);
+    var body = form_data.toHttpNullBody();
+    print(body);
     try {
       switch (widget.httpMethod) {
         case HttpMethod.GET:
