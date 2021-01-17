@@ -16,7 +16,7 @@ class DashboardScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: MyCustomForm(
-            httpMethod: HttpMethod.PUT,
+            httpMethod: HttpMethod.POST,
             formKey: _form,
             successHttpStatusCode: 201,
             buttonText: "Sign Up",
@@ -39,7 +39,7 @@ class DashboardScreen extends StatelessWidget {
                   label: "Enrollment Date",
                   keyboardType: TextInputType.datetime),
             ],
-            url: "https://api.safarinjema.wavvy.dev/api/v1/car-types/2",
+            url: "https://bwsapi.sisitech.dev/api/v1/timps/",
             onLoading: (value) {
               print("On loading $value");
             },

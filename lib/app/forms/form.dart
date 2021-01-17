@@ -121,6 +121,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
 
   void createForm() async {
     try {
+      dynamicFields.clear();
       // var response = await http.;
       // Response response = await Dio().request(widget.url);
       showLoader(true);
@@ -132,6 +133,8 @@ class _MyCustomFormState extends State<MyCustomForm> {
             request.headers.add("Authorization", "Bearer micha");
         return request.close();
       }).then((HttpClientResponse response) {
+        showLoader(false);
+        print(response.statusCode);
         response.transform(utf8.decoder).listen((contents) {
           if (response.statusCode != 200) {
             print("GOt ${response.statusCode}");
@@ -149,6 +152,9 @@ class _MyCustomFormState extends State<MyCustomForm> {
           }
           var fields = data["actions"][widget.httpMethod.toText()]
               as Map<String, dynamic>;
+          if(fields==null){
+            return;
+          }
           fields.forEach((key, value) {
             print(value);
             var readOnly = value["read_only"];
@@ -162,7 +168,6 @@ class _MyCustomFormState extends State<MyCustomForm> {
             }
           });
           setState(() {});
-          showLoader(false);
         });
       });
     } catch (error) {
